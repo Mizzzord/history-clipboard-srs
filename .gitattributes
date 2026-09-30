@@ -1,0 +1,2 @@
+*.sln text eol=crlf whitespace=cr-at-eol
+licenses/* -text whitespace=-blank-at-eol,-blank-at-eof,cr-at-eol
