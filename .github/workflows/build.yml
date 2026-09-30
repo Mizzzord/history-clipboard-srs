@@ -1,0 +1,45 @@
+name: Build and verify desktop packages
+
+on:
+  push:
+    branches: [main, 'codex/**']
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  desktop:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            rid: win-x64
+          - os: macos-14
+            rid: osx-arm64
+    runs-on: ${{ matrix.os }}
+    env:
+      DOTNET_CLI_TELEMETRY_OPTOUT: '1'
+      AVALONIA_TELEMETRY_OPTOUT: '1'
+      HISTORY_CLIPBOARD_NATIVE_TESTS: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Test and package
+        run: python scripts/build.py --rid ${{ matrix.rid }}
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: HistoryClipboard-${{ matrix.rid }}
+          path: |
+            artifacts/*.zip
+            artifacts/*.json
+            artifacts/SHA256SUMS.txt
+          if-no-files-found: warn
