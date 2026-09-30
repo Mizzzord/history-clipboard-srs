@@ -26,6 +26,8 @@ def make_mac_bundle(published, rid):
     if platform.system() != "Darwin":
         raise SystemExit("Для упаковки и подписи .app выполните скрипт на macOS.")
     bundle = ROOT / "artifacts/dist" / rid / "History Clipboard.app"
+    if bundle.exists():
+        shutil.rmtree(bundle)
     macos = bundle / "Contents/MacOS"
     resources = bundle / "Contents/Resources"
     macos.mkdir(parents=True, exist_ok=True)
@@ -74,6 +76,7 @@ def build(dotnet, rid):
         dist.mkdir(parents=True, exist_ok=True)
         executable = dist / "HistoryClipboard.exe"
         shutil.copy2(published / "HistoryClipboard.exe", executable)
+        shutil.copy2(executable, ROOT / "artifacts/HistoryClipboard.exe")
         shutil.copy2(ROOT / "docs/USER_GUIDE.md", dist / "Инструкция.md")
         shutil.copy2(ROOT / "THIRD_PARTY_NOTICES.md", dist / "THIRD_PARTY_NOTICES.md")
         shutil.copytree(ROOT / "licenses", dist / "Licenses", dirs_exist_ok=True)
@@ -89,6 +92,7 @@ def build(dotnet, rid):
     return {
         "rid": rid, "archive": archive.name, "executable": str(executable.relative_to(ROOT)),
         "sha256": hashlib.sha256(archive.read_bytes()).hexdigest(), "bytes": archive.stat().st_size,
+        "executable_sha256": hashlib.sha256(executable.read_bytes()).hexdigest(),
         "local_storage_self_test": tested,
         "signature": "ad-hoc, без нотариализации Apple" if rid.startswith("osx") else "без подписи Authenticode"
     }
@@ -104,6 +108,10 @@ def main():
     results = [build(args.dotnet, rid) for rid in args.rid or RIDS]
     (ROOT / "artifacts/build-manifest.json").write_text(json.dumps({"version": VERSION, "artifacts": results}, ensure_ascii=False, indent=2) + "\n")
     (ROOT / "artifacts/SHA256SUMS.txt").write_text("".join(f"{r['sha256']}  {r['archive']}\n" for r in results))
+    for result in results:
+        if result["rid"] == "win-x64":
+            with (ROOT / "artifacts/SHA256SUMS.txt").open("a") as stream:
+                stream.write(f"{result['executable_sha256']}  HistoryClipboard.exe\n")
 
 
 if __name__ == "__main__":

@@ -5,3 +5,5 @@ artifacts/
 .DS_Store
 TestResults/
 *.user
+__pycache__/
+*.pyc

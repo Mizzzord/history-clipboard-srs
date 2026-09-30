@@ -40,6 +40,7 @@ jobs:
           name: HistoryClipboard-${{ matrix.rid }}
           path: |
             artifacts/*.zip
+            artifacts/*.exe
             artifacts/*.json
             artifacts/SHA256SUMS.txt
           if-no-files-found: warn
