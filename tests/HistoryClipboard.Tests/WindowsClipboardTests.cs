@@ -55,6 +55,33 @@ public sealed class WindowsClipboardTests
             File.Delete(file);
             ExternalScript("[System.Windows.Forms.Clipboard]::Clear()");
         }
+        using var ready = new ManualResetEventSlim();
+        using var release = new ManualResetEventSlim();
+        var locked = false;
+        var holder = Task.Run(() =>
+        {
+            locked = OpenClipboard(0);
+            ready.Set();
+            try { if (locked) release.Wait(); }
+            finally { if (locked) CloseClipboard(); }
+        });
+        var directory = Path.Combine(Path.GetTempPath(), "clipboard-lock-test-" + Guid.NewGuid().ToString("N"));
+        try
+        {
+            Assert.True(ready.Wait(TimeSpan.FromSeconds(5)));
+            Assert.True(locked);
+            Assert.Throws<ClipboardAccessException>(() => clipboard.Read());
+            var store = new HistoryStore(Path.Combine(directory, "history.db"));
+            store.Add("QA-Windows История доступна при блокировке буфера", DateTimeOffset.Now);
+            Assert.Single(store.List());
+        }
+        finally
+        {
+            release.Set();
+            holder.GetAwaiter().GetResult();
+            if (Directory.Exists(directory))
+                Directory.Delete(directory, recursive: true);
+        }
     }
 
     private static void ExternalText(string text)
@@ -110,4 +137,12 @@ public sealed class WindowsClipboardTests
 
     [DllImport("user32.dll", EntryPoint = "DispatchMessageW")]
     private static extern nint DispatchMessage(ref Message message);
+
+    [DllImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool OpenClipboard(nint window);
+
+    [DllImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool CloseClipboard();
 }
