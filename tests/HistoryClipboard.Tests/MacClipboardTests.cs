@@ -43,7 +43,11 @@ public sealed class MacClipboardTests
             start.ArgumentList.Add("import AppKit; let p = NSPasteboard.general; p.clearContents(); guard p.writeObjects([NSURL(fileURLWithPath:CommandLine.arguments[1])]), p.setString(\"QA-Mac File representation\", forType:.string) else { fatalError(\"Cannot prepare clipboard fixture\") }");
             start.ArgumentList.Add(file);
             using var writer = Process.Start(start)!;
-            Assert.True(writer.WaitForExit(30_000));
+            if (!writer.WaitForExit(120_000))
+            {
+                writer.Kill(entireProcessTree: true);
+                throw new TimeoutException("Swift clipboard fixture compilation or execution timed out.");
+            }
             Assert.Equal(0, writer.ExitCode);
             Assert.Null(clipboard.Read().Text);
         }
