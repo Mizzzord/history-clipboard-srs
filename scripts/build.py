@@ -106,11 +106,11 @@ def main():
     run(args.dotnet, "restore", "--locked-mode")
     run(args.dotnet, "test", ROOT / "tests/HistoryClipboard.Tests/HistoryClipboard.Tests.csproj", "-c", "Release", "--no-restore")
     results = [build(args.dotnet, rid) for rid in args.rid or RIDS]
-    (ROOT / "artifacts/build-manifest.json").write_text(json.dumps({"version": VERSION, "artifacts": results}, ensure_ascii=False, indent=2) + "\n")
-    (ROOT / "artifacts/SHA256SUMS.txt").write_text("".join(f"{r['sha256']}  {r['archive']}\n" for r in results))
+    (ROOT / "artifacts/build-manifest.json").write_text(json.dumps({"version": VERSION, "artifacts": results}, ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n")
+    (ROOT / "artifacts/SHA256SUMS.txt").write_text("".join(f"{r['sha256']}  {r['archive']}\n" for r in results), encoding="utf-8", newline="\n")
     for result in results:
         if result["rid"] == "win-x64":
-            with (ROOT / "artifacts/SHA256SUMS.txt").open("a") as stream:
+            with (ROOT / "artifacts/SHA256SUMS.txt").open("a", encoding="utf-8", newline="\n") as stream:
                 stream.write(f"{result['executable_sha256']}  HistoryClipboard.exe\n")
 
 
