@@ -19,6 +19,8 @@ jobs:
             rid: win-x64
           - os: macos-14
             rid: osx-arm64
+          - os: macos-15-intel
+            rid: osx-x64
     runs-on: ${{ matrix.os }}
     env:
       DOTNET_CLI_TELEMETRY_OPTOUT: '1'
