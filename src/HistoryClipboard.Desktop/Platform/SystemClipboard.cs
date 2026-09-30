@@ -7,6 +7,7 @@ public sealed class ClipboardAccessException(string message) : Exception(message
 public interface ISystemClipboard : IDisposable
 {
     long Version { get; }
+    void SetMonitoring(bool active) { }
     ClipboardSnapshot Read();
     ClipboardSnapshot Write(string text);
 }

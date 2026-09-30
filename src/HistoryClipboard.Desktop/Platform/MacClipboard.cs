@@ -9,6 +9,7 @@ internal sealed class MacClipboard : ISystemClipboard
     private readonly nint _pasteboard;
     private readonly nint _stringType;
     private readonly nint _fileType;
+    private nint _activity;
 
     public MacClipboard()
     {
@@ -18,11 +19,38 @@ internal sealed class MacClipboard : ISystemClipboard
         _fileType = CreateString("public.file-url");
         if (_pasteboard == 0 || _stringType == 0 || _fileType == 0)
             throw new ClipboardAccessException("Системный буфер недоступен.");
+        Send(_pasteboard, Selector("retain"));
         Send(_stringType, Selector("retain"));
         Send(_fileType, Selector("retain"));
     }
 
     public long Version => SendLong(_pasteboard, Selector("changeCount"));
+
+    public void SetMonitoring(bool active)
+    {
+        if (active == (_activity != 0))
+            return;
+        var pool = Send(GetClass("NSAutoreleasePool"), Selector("new"));
+        try
+        {
+            var info = Send(GetClass("NSProcessInfo"), Selector("processInfo"));
+            if (active)
+            {
+                _activity = SendActivity(info, Selector("beginActivityWithOptions:reason:"), 0x00EFFFFF,
+                    CreateString("Сохранение истории буфера по запросу пользователя"));
+                if (_activity == 0)
+                    throw new ClipboardAccessException("Не удалось включить фоновый сбор.");
+                Send(_activity, Selector("retain"));
+            }
+            else
+            {
+                SendArg(info, Selector("endActivity:"), _activity);
+                Send(_activity, Selector("release"));
+                _activity = 0;
+            }
+        }
+        finally { Send(pool, Selector("drain")); }
+    }
 
     public ClipboardSnapshot Read()
     {
@@ -64,6 +92,8 @@ internal sealed class MacClipboard : ISystemClipboard
 
     public void Dispose()
     {
+        SetMonitoring(false);
+        Send(_pasteboard, Selector("release"));
         Send(_stringType, Selector("release"));
         Send(_fileType, Selector("release"));
     }
@@ -91,6 +121,9 @@ internal sealed class MacClipboard : ISystemClipboard
 
     [DllImport(ObjC, EntryPoint = "objc_msgSend")]
     private static extern nint SendString(nint receiver, nint selector, [MarshalAs(UnmanagedType.LPUTF8Str)] string value);
+
+    [DllImport(ObjC, EntryPoint = "objc_msgSend")]
+    private static extern nint SendActivity(nint receiver, nint selector, ulong options, nint reason);
 
     [DllImport(ObjC, EntryPoint = "objc_msgSend")]
     [return: MarshalAs(UnmanagedType.I1)]

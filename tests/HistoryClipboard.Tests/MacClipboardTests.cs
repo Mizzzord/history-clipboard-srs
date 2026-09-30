@@ -20,6 +20,10 @@ public sealed class MacClipboardTests
     public void ExternalCopyVersionUnicodeOwnCopyAndFileFormats()
     {
         using var clipboard = new MacClipboard();
+        clipboard.SetMonitoring(true);
+        clipboard.SetMonitoring(true);
+        clipboard.SetMonitoring(false);
+        clipboard.SetMonitoring(true);
         var baseline = clipboard.Read();
         var text = "QA-Mac Привет 👋\r\n\tПолный текст  ";
         using (var writer = Process.Start(new ProcessStartInfo("pbcopy") { RedirectStandardInput = true, StandardInputEncoding = new UTF8Encoding(false) })!)

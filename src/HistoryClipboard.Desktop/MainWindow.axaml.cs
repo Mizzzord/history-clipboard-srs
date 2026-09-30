@@ -229,6 +229,8 @@ public sealed partial class MainWindow : Window
         if (!_model.CanToggle)
             return;
         _model.Paused = !_model.Paused;
+        if (_model.Paused)
+            _clipboard?.SetMonitoring(false);
         _baselineNeeded = true;
         UpdateStatus();
         if (!_model.Paused)
@@ -240,6 +242,7 @@ public sealed partial class MainWindow : Window
         try
         {
             _clipboard ??= SystemClipboard.Create();
+            _clipboard.SetMonitoring(true);
             _policy.EstablishBaseline(_clipboard.Version);
             _baselineNeeded = false;
         }
@@ -343,6 +346,7 @@ public sealed partial class MainWindow : Window
     {
         _model.StorageError = ex.Message;
         _model.Paused = true;
+        _clipboard?.SetMonitoring(false);
         _model.Status = "Сбор остановлен из-за ошибки хранилища.";
         _model.Update();
     }
