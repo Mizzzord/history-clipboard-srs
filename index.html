@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>History Clipboard · История текста</title>
+  <link rel="stylesheet" href="style.css">
+  <script defer src="script.js"></script>
+</head>
+<body>
+  <main>
+    <header><span class="symbol" aria-hidden="true">▤</span><h1>History Clipboard</h1></header>
+    <div class="workspace">
+      <section class="compose" aria-labelledby="compose-title">
+        <h2 id="compose-title">Новый фрагмент</h2>
+        <p>Вставьте текст вручную. История этой вкладки очищается при перезагрузке.</p>
+        <form id="add-form">
+          <label for="input">Текст фрагмента</label>
+          <textarea id="input" rows="8" placeholder="Вставьте или введите текст"></textarea>
+          <button class="primary" type="submit">Добавить в историю</button>
+        </form>
+      </section>
+      <section class="history" aria-labelledby="history-title">
+        <div class="heading"><h2 id="history-title">История</h2><output id="count">0 / 500</output></div>
+        <label for="search">Поиск по истории</label>
+        <input id="search" type="search" placeholder="Слово или часть фразы">
+        <p id="empty">История пуста. Добавьте первый фрагмент.</p>
+        <ol id="entries"></ol>
+        <button type="button" id="clear" disabled>Очистить историю</button>
+      </section>
+    </div>
+    <p role="status" id="status"></p>
+  </main>
+</body>
+</html>
