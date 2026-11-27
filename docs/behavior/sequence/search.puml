@@ -1,0 +1,30 @@
+@startuml
+hide footbox
+skinparam shadowing false
+title Поиск фрагмента и загрузка полного текста
+actor Пользователь as U
+participant MainViewModel as VM
+participant MainWindow as UI
+database HistoryStore as DB
+U -> VM : Вводит поисковую строку
+VM -> UI : QueryChanged
+UI -> UI : Отменить старый таймер, подождать 180 мс
+UI -> DB : List(query), Count()
+DB --> UI : id, превью, время и общее количество
+alt Запрос или номер обновления устарел
+  UI -> UI : Отбросить результат
+else Запрос актуален
+  UI -> VM : Обновить список и выбор
+  alt Есть выбранная запись
+    VM -> UI : SelectionChanged
+    UI -> DB : ReadText(id), ReadTags(id)
+    DB --> UI : Исходный текст и метки
+    opt Выбор по-прежнему актуален
+      UI -> VM : Заполнить панель просмотра
+      VM --> U : Показать текст и метки
+    end
+  else Совпадений нет
+    VM --> U : Показать пустой результат
+  end
+end
+@enduml

@@ -1,0 +1,34 @@
+@startuml
+!pragma layout smetana
+left to right direction
+skinparam shadowing false
+skinparam usecaseBackgroundColor #F1F8F6
+skinparam usecaseBorderColor #397269
+actor "Пользователь" as U
+actor "Системный буфер" as OS
+rectangle "History Clipboard" {
+  usecase "Включить или приостановить сбор" as Toggle
+  usecase "Сохранить новое копирование" as Add
+  usecase "Проверить формат, размер\nи последовательный повтор" as Check
+  usecase "Просмотреть историю" as View
+  usecase "Найти по тексту" as Search
+  usecase "Скопировать запись" as Copy
+  usecase "Изменить метки записи" as Tag
+  usecase "Удалить запись" as Del
+  usecase "Очистить историю" as Clear
+  usecase "Подтвердить очистку" as Confirm
+  usecase "Восстановить хранилище" as Recover
+}
+U -- Toggle
+OS -- Add
+Add ..> Check : <<include>>
+U -- View
+Search ..> View : <<extend>>
+U -- Copy
+OS -- Copy
+U -- Tag
+U -- Del
+U -- Clear
+Clear ..> Confirm : <<include>>
+U -- Recover
+@enduml

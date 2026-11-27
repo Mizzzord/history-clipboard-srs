@@ -1,0 +1,25 @@
+@startuml
+hide footbox
+skinparam shadowing false
+title Повторное копирование выбранной записи
+actor Пользователь as U
+participant MainWindow as UI
+participant "Адаптер буфера ОС" as OS
+participant CapturePolicy as Policy
+U -> UI : Скопировать / Ctrl+Enter / ⌘Enter
+UI -> UI : Взять SelectedText целиком
+UI -> OS : Write(text)
+alt Буфер содержит исходный текст
+  OS --> UI : Снимок после записи
+  UI -> Policy : SuppressOwnCopy(snapshot)
+  UI --> U : Подтвердить копирование
+  UI -> Policy : Проверить версию при следующем опросе
+  Policy --> UI : Версия уже учтена
+else В буфере оказался другой текст
+  OS --> UI : Снимок с другим содержимым
+  UI --> U : Предложить повторить копирование
+else Ошибка доступа
+  OS --> UI : ClipboardAccessException
+  UI --> U : Сообщить об ошибке
+end
+@enduml

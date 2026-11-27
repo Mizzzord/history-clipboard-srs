@@ -1,4 +1,4 @@
-# History Clipboard 1.0
+# History Clipboard 1.1
 
 ## Запуск
 

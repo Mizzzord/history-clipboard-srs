@@ -1,0 +1,30 @@
+@startuml
+hide footbox
+skinparam shadowing false
+title Новое копирование при активном сборе
+actor Пользователь as U
+participant "Системный буфер" as OS
+participant MainWindow as UI
+participant CapturePolicy as Policy
+database "HistoryStore / SQLite" as DB
+U -> OS : Копирует текст в другом приложении
+UI -> OS : Получить версию при опросе
+alt Версия новая
+  UI -> OS : Read()
+  OS --> UI : ClipboardSnapshot(version, text)
+  UI -> Policy : Observe(snapshot)
+  alt Допустимый текст
+    UI -> DB : Add(text, time)
+    DB -> DB : INSERT, вытеснение сверх 500, COMMIT
+    DB --> UI : Запись сохранена
+    UI -> UI : RefreshList()
+  else Больше 1 МиБ
+    UI --> U : Показать сообщение о размере
+  else Повтор или нет текста
+    Policy --> UI : Ignored
+  end
+else Версия прежняя
+  UI -> UI : Завершить опрос
+end
+note over UI,DB : Ошибка хранилища останавливает сбор.
+@enduml
