@@ -8,7 +8,7 @@
 <p align="center">
   <a href="https://github.com/Mizzzord/history-clipboard-srs/releases/tag/v1.1.0">Скачать 1.1.0</a> ·
   <a href="docs/USER_GUIDE.md">Руководство</a> ·
-  <a href="docs/ACCEPTANCE.md">Проверки</a> ·
+  <a href="https://github.com/Mizzzord/history-clipboard-srs/actions/workflows/build.yml">Проверки</a> ·
   <a href="https://github.com/Mizzzord/history-clipboard-srs/wiki/Техническое-задание">Техническое задание · Wiki</a>
 </p>
 
@@ -79,7 +79,7 @@
 
 ## Схема SQLite и метки
 
-В сборке 1.1.0 из исходников записям можно назначать метки. Структура таблиц, переход к 3НФ, миграция с версии 1 и проверочные запросы описаны в [модели данных](database/normalization.md). В каталоге `database` находятся исполняемая схема и демонстрационные данные.
+В сборке 1.1.0 записям можно назначать метки. Структура таблиц, переход к 3НФ, миграция с версии 1 и проверочные запросы описаны в [модели данных](database/normalization.md). В каталоге `database` находятся исполняемая схема и демонстрационные данные.
 
 ## Разработка
 
