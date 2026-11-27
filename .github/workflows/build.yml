@@ -2,7 +2,7 @@ name: Build and verify desktop packages
 
 on:
   push:
-    branches: [main, 'codex/**']
+    branches: [main]
   pull_request:
   workflow_dispatch:
 

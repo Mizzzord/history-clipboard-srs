@@ -6,15 +6,24 @@
 <p align="center"><b>Скопировали. Сохранили. Нашли снова.</b></p>
 <p align="center">История текстового буфера обмена для Windows и macOS.<br>Русский интерфейс · Быстрый поиск · Данные на вашем устройстве</p>
 <p align="center">
-  <a href="https://github.com/Mizzzord/history-clipboard-srs/releases/tag/v1.0.0">Скачать 1.0.0</a> ·
+  <a href="https://github.com/Mizzzord/history-clipboard-srs/releases/tag/v1.1.0">Скачать 1.1.0</a> ·
   <a href="docs/USER_GUIDE.md">Руководство</a> ·
-  <a href="docs/ACCEPTANCE.md">Проверки</a> ·
+  <a href="https://github.com/Mizzzord/history-clipboard-srs/actions/workflows/build.yml">Проверки</a> ·
   <a href="https://github.com/Mizzzord/history-clipboard-srs/wiki/Техническое-задание">Техническое задание · Wiki</a>
 </p>
 
 ![Интерфейс History Clipboard с примерами записей](assets/screenshot.png)
 
 *Изображение получено из интерфейса приложения с вымышленными записями.*
+
+## Лабораторные работы
+
+| Работа | Материалы для проверки |
+| --- | --- |
+| 2. Планирование | [План и декомпозиция](docs/planning/README.md) · [Диаграмма Ганта](https://github.com/users/Mizzzord/projects/3/views/2) |
+| 3. Реализация и контроль качества | [Процесс разработки](https://github.com/Mizzzord/history-clipboard-srs/wiki/Процесс-разработки) · [Pull requests](https://github.com/Mizzzord/history-clipboard-srs/pulls?q=is%3Apr+is%3Amerged) · [Actions](https://github.com/Mizzzord/history-clipboard-srs/actions) |
+| 4. Проектирование БД | [Нормализация и ER-модель](database/normalization.md) · [SQL-скрипты](database) |
+| 5. Моделирование поведения | [Use Case и четыре диаграммы последовательности](docs/behavior/README.md) |
 
 ## Что умеет приложение
 
@@ -29,17 +38,17 @@
 
 ## Скачать и запустить
 
-[Релиз 1.0.0](https://github.com/Mizzzord/history-clipboard-srs/releases/tag/v1.0.0) содержит самостоятельные сборки. Устанавливать .NET или Python для запуска не требуется.
+[Релиз 1.1.0](https://github.com/Mizzzord/history-clipboard-srs/releases/tag/v1.1.0) содержит самостоятельные сборки. Устанавливать .NET или Python для запуска не требуется.
 
 | Платформа | Загрузка | Запуск |
 | --- | --- | --- |
-| Windows x64 | [ZIP с `.exe` и инструкцией](https://github.com/Mizzzord/history-clipboard-srs/releases/download/v1.0.0/HistoryClipboard-1.0.0-win-x64.zip) · [только `.exe`](https://github.com/Mizzzord/history-clipboard-srs/releases/download/v1.0.0/HistoryClipboard.exe) | Распакуйте ZIP, откройте `HistoryClipboard.exe` |
-| Mac с Apple Silicon | [ZIP с `.app`](https://github.com/Mizzzord/history-clipboard-srs/releases/download/v1.0.0/HistoryClipboard-1.0.0-osx-arm64.zip) | Распакуйте, перенесите приложение в «Программы» |
-| Mac с Intel | [ZIP с `.app`](https://github.com/Mizzzord/history-clipboard-srs/releases/download/v1.0.0/HistoryClipboard-1.0.0-osx-x64.zip) | Распакуйте, перенесите приложение в «Программы» |
+| Windows x64 | [ZIP с `.exe` и инструкцией](https://github.com/Mizzzord/history-clipboard-srs/releases/download/v1.1.0/HistoryClipboard-1.1.0-win-x64.zip) · [только `.exe`](https://github.com/Mizzzord/history-clipboard-srs/releases/download/v1.1.0/HistoryClipboard.exe) | Распакуйте ZIP, откройте `HistoryClipboard.exe` |
+| Mac с Apple Silicon | [ZIP с `.app`](https://github.com/Mizzzord/history-clipboard-srs/releases/download/v1.1.0/HistoryClipboard-1.1.0-osx-arm64.zip) | Распакуйте, перенесите приложение в «Программы» |
+| Mac с Intel | [ZIP с `.app`](https://github.com/Mizzzord/history-clipboard-srs/releases/download/v1.1.0/HistoryClipboard-1.1.0-osx-x64.zip) | Распакуйте, перенесите приложение в «Программы» |
 
 Целевые системы: Windows 10/11 x64 и macOS 12+. Фактическое покрытие платформ указано в [отчёте о приёмке](docs/ACCEPTANCE.md). Интерактивный интерфейс Windows/Intel Mac и минимальные версии ОС требуют отдельного прогона.
 
-Сборки не имеют коммерческих сертификатов Windows Authenticode / Apple Developer ID. Mac-приложения подписаны ad-hoc и не нотариализованы Apple; ОС может потребовать дополнительное подтверждение открытия. Порядок запуска описан в [руководстве](docs/USER_GUIDE.md). Контрольные суммы — в файле [SHA256SUMS.txt](https://github.com/Mizzzord/history-clipboard-srs/releases/download/v1.0.0/SHA256SUMS.txt).
+Сборки не имеют коммерческих сертификатов Windows Authenticode / Apple Developer ID. Mac-приложения подписаны ad-hoc и не нотариализованы Apple; ОС может потребовать дополнительное подтверждение открытия. Порядок запуска описан в [руководстве](docs/USER_GUIDE.md). Контрольные суммы — в файле [SHA256SUMS.txt](https://github.com/Mizzzord/history-clipboard-srs/releases/download/v1.1.0/SHA256SUMS.txt).
 
 Репозиторий публичный: исходный код, Wiki, задачи и сборки доступны без входа в аккаунт GitHub.
 
@@ -70,7 +79,7 @@
 
 ## Схема SQLite и метки
 
-В сборке 1.1.0 из исходников записям можно назначать метки. Структура таблиц, переход к 3НФ, миграция с версии 1 и проверочные запросы описаны в [модели данных](database/normalization.md). В каталоге `database` находятся исполняемая схема и демонстрационные данные.
+В сборке 1.1.0 записям можно назначать метки. Структура таблиц, переход к 3НФ, миграция с версии 1 и проверочные запросы описаны в [модели данных](database/normalization.md). В каталоге `database` находятся исполняемая схема и демонстрационные данные.
 
 ## Разработка
 
