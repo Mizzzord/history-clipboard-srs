@@ -15,7 +15,10 @@ public sealed class HistoryStore
         try
         {
             if (File.Exists(path))
-                ValidateExisting();
+            {
+                if (ValidateExisting() == 1)
+                    InitializeSchema(path, SqliteOpenMode.ReadWrite);
+            }
             else
             {
                 Directory.CreateDirectory(System.IO.Path.GetDirectoryName(path)!);
@@ -53,6 +56,50 @@ public sealed class HistoryStore
         command.Parameters.AddWithValue("$id", id);
         return command.ExecuteScalar() as string;
     });
+
+    public IReadOnlyList<string> ReadTags(long id) => Execute(connection =>
+    {
+        using var command = connection.CreateCommand();
+        command.CommandText = "SELECT t.name FROM tags t JOIN entry_tags et ON et.tag_id = t.id WHERE et.entry_id = $id ORDER BY t.name";
+        command.Parameters.AddWithValue("$id", id);
+        using var reader = command.ExecuteReader();
+        var names = new List<string>();
+        while (reader.Read())
+            names.Add(reader.GetString(0));
+        return names;
+    });
+
+    public void SetTags(long id, string input)
+    {
+        var names = input.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Distinct(StringComparer.Ordinal).ToArray();
+        if (names.Length > 12 || names.Any(name => name.Length > 40 || name.Any(char.IsControl)))
+            throw new ArgumentException("Допускается до 12 меток по 40 символов без управляющих знаков.");
+        Execute(connection =>
+        {
+            using var transaction = connection.BeginTransaction();
+            using var command = connection.CreateCommand();
+            command.Transaction = transaction;
+            command.Parameters.AddWithValue("$id", id);
+            command.CommandText = "SELECT id FROM entries WHERE id = $id";
+            if (command.ExecuteScalar() is null)
+                throw new ArgumentException("Эта запись уже удалена.");
+            command.CommandText = "DELETE FROM entry_tags WHERE entry_id = $id";
+            command.ExecuteNonQuery();
+            var parameter = command.Parameters.Add("$name", SqliteType.Text);
+            command.CommandText = """
+                INSERT INTO tags(name) VALUES ($name) ON CONFLICT(name) DO NOTHING;
+                INSERT INTO entry_tags(entry_id, tag_id) SELECT $id, id FROM tags WHERE name = $name;
+                """;
+            foreach (var name in names)
+            {
+                parameter.Value = name;
+                command.ExecuteNonQuery();
+            }
+            transaction.Commit();
+            return true;
+        }, writable: true);
+    }
 
     public int Count() => Execute(connection =>
     {
@@ -132,7 +179,7 @@ public sealed class HistoryStore
         }
     }
 
-    private void ValidateExisting()
+    private int ValidateExisting()
     {
         using var connection = Open(Path, SqliteOpenMode.ReadOnly);
         using var command = connection.CreateCommand();
@@ -143,8 +190,17 @@ public sealed class HistoryStore
                 throw new StorageException("Хранилище повреждено.");
         }
         command.CommandText = "PRAGMA user_version";
-        if (Convert.ToInt32(command.ExecuteScalar(), CultureInfo.InvariantCulture) != 1)
+        var version = Convert.ToInt32(command.ExecuteScalar(), CultureInfo.InvariantCulture);
+        if (version is not (1 or 2))
             throw new StorageException("Версия хранилища не поддерживается.");
+        if (version == 2)
+        {
+            command.CommandText = "SELECT t.name FROM entry_tags et JOIN tags t ON t.id = et.tag_id LIMIT 0";
+            command.ExecuteScalar();
+            command.CommandText = "PRAGMA foreign_key_check";
+            if (command.ExecuteScalar() is not null)
+                throw new StorageException("Нарушена связь записи с меткой.");
+        }
         command.CommandText = "SELECT id, text, created_at FROM entries ORDER BY id DESC";
         using var entries = command.ExecuteReader();
         var count = 0;
@@ -156,31 +212,29 @@ public sealed class HistoryStore
                 || !DateTimeOffset.TryParseExact(entries.GetString(2), "O", CultureInfo.InvariantCulture, DateTimeStyles.None, out _))
                 throw new StorageException("Данные истории некорректны.");
         }
+        return version;
     }
 
     private static void CreateDatabase(string path)
     {
-        using var connection = Open(path, SqliteOpenMode.ReadWriteCreate);
-        using (var setup = connection.CreateCommand())
-        {
-            setup.CommandText = "PRAGMA journal_mode = WAL";
-            setup.ExecuteScalar();
-        }
-        using var transaction = connection.BeginTransaction();
-        using var command = connection.CreateCommand();
-        command.Transaction = transaction;
-        command.CommandText = """
-            CREATE TABLE entries (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                text TEXT NOT NULL CHECK(length(CAST(text AS BLOB)) BETWEEN 1 AND 1048576),
-                created_at TEXT NOT NULL
-            );
-            PRAGMA user_version = 1;
-            """;
-        command.ExecuteNonQuery();
-        transaction.Commit();
+        InitializeSchema(path, SqliteOpenMode.ReadWriteCreate);
         if (!OperatingSystem.IsWindows())
             File.SetUnixFileMode(path, UnixFileMode.UserRead | UnixFileMode.UserWrite);
+    }
+
+    private static void InitializeSchema(string path, SqliteOpenMode mode)
+    {
+        using var connection = Open(path, mode);
+        using var command = connection.CreateCommand();
+        command.CommandText = "PRAGMA journal_mode = WAL";
+        command.ExecuteScalar();
+        using var transaction = connection.BeginTransaction();
+        command.Transaction = transaction;
+        using var resource = typeof(HistoryStore).Assembly.GetManifestResourceStream("HistoryClipboard.Schema.sql")!;
+        using var reader = new StreamReader(resource);
+        command.CommandText = reader.ReadToEnd();
+        command.ExecuteNonQuery();
+        transaction.Commit();
     }
 
     private T Execute<T>(Func<SqliteConnection, T> operation, bool writable = false)
@@ -202,6 +256,7 @@ public sealed class HistoryStore
         {
             DataSource = path,
             Mode = mode,
+            ForeignKeys = true,
             Pooling = false,
             DefaultTimeout = 1
         }.ToString());

@@ -52,7 +52,7 @@
       </Border>
 
       <Border Grid.Column="1" Background="White" CornerRadius="12" BorderBrush="#E4E7EC" BorderThickness="1" Padding="18">
-        <Grid RowDefinitions="Auto,*,Auto,Auto" RowSpacing="14">
+        <Grid RowDefinitions="Auto,*,Auto,Auto,Auto" RowSpacing="14">
           <StackPanel Spacing="5">
             <TextBlock Text="Полный текст" FontWeight="SemiBold" Foreground="#344054" />
             <TextBlock Text="{Binding SelectedDate}" FontSize="12" Foreground="#667085" />
@@ -68,7 +68,11 @@
               <Button Content="Следующая часть" Click="NextPage" IsEnabled="{Binding CanNextPage}" />
             </StackPanel>
           </StackPanel>
-          <Grid Grid.Row="3" ColumnDefinitions="*,Auto" ColumnSpacing="12">
+          <Grid Grid.Row="3" ColumnDefinitions="*,Auto" ColumnSpacing="8" IsEnabled="{Binding CanAct}">
+            <TextBox Text="{Binding Tags, Mode=TwoWay}" Watermark="Метки через запятую" AutomationProperties.Name="Метки записи через запятую" />
+            <Button Grid.Column="1" Content="Сохранить метки" Click="SaveTags" />
+          </Grid>
+          <Grid Grid.Row="4" ColumnDefinitions="*,Auto" ColumnSpacing="12">
             <Button Content="Скопировать" Classes="primary" Click="CopyEntry" IsEnabled="{Binding CanAct}" HorizontalContentAlignment="Center" />
             <Button Grid.Column="1" Content="Удалить" Classes="danger" Click="DeleteEntry" IsEnabled="{Binding CanAct}" />
           </Grid>

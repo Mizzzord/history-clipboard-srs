@@ -9,6 +9,8 @@ public sealed class MainViewModel : INotifyPropertyChanged
 {
     private string _query = "";
     private HistoryEntry? _selected;
+    private string _tags = "";
+    public string Tags { get => _tags; set => Set(ref _tags, value); }
     private string _selectedText = "";
     private string _status = "Открываем историю…";
     private string _notice = "";
@@ -34,7 +36,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
     public HistoryEntry? Selected
     {
         get => _selected;
-        set { if (Set(ref _selected, value)) { SelectedText = ""; Loading = value is not null; Update(); SelectionChanged?.Invoke(); } }
+        set { if (Set(ref _selected, value)) { Tags = ""; SelectedText = ""; Loading = value is not null; Update(); SelectionChanged?.Invoke(); } }
     }
     public string SelectedText
     {
