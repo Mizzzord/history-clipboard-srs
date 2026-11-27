@@ -62,6 +62,10 @@ internal static class Program
             if (store.ReadText(entry.Id) != text)
                 throw new InvalidOperationException();
             checks.Add("SQLite: сохранение, восстановление, Unicode и поиск");
+            store.SetTags(entry.Id, "Проверка, Архив");
+            if (new HistoryStore(path).ReadTags(entry.Id).Count != 2)
+                throw new InvalidOperationException();
+            checks.Add("Метки сохраняются после открытия базы");
             store.Delete(entry.Id);
             if (new HistoryStore(path).Count() != 0)
                 throw new InvalidOperationException();

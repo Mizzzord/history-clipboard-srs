@@ -12,7 +12,7 @@ import zipfile
 
 ROOT = Path(__file__).resolve().parents[1]
 PROJECT = ROOT / "src/HistoryClipboard.Desktop/HistoryClipboard.Desktop.csproj"
-VERSION = "1.0.0"
+VERSION = "1.1.0"
 RIDS = ("win-x64", "osx-arm64", "osx-x64")
 
 
