@@ -133,5 +133,37 @@ public sealed class HistoryStoreTests : IDisposable
         Assert.Empty(store.List("не должна сохраниться"));
     }
 
+    [Fact]
+    public void UpgradePreservesEntriesAndSharedTagsSurviveDeletion()
+    {
+        using (var legacy = new SqliteConnection($"Data Source={Database};Pooling=False"))
+        {
+            legacy.Open();
+            using var setup = legacy.CreateCommand();
+            setup.CommandText = """
+                CREATE TABLE entries (id INTEGER PRIMARY KEY AUTOINCREMENT, text TEXT NOT NULL, created_at TEXT NOT NULL);
+                INSERT INTO entries VALUES (7, 'Старый текст', '2026-09-30T12:00:00.0000000+03:00');
+                PRAGMA user_version = 1;
+                """;
+            setup.ExecuteNonQuery();
+        }
+        var store = new HistoryStore(Database);
+        Assert.Equal("Старый текст", store.ReadText(7));
+        store.Add("Другой текст", DateTimeOffset.Now);
+        store.SetTags(7, " Работа , Архив, Работа");
+        store.SetTags(8, "Работа");
+        Assert.Equal(new[] { "Архив", "Работа" }, new HistoryStore(Database).ReadTags(7));
+        Assert.Throws<ArgumentException>(() => store.SetTags(7, new string('x', 41)));
+        Assert.Equal(2, store.ReadTags(7).Count);
+        store.Delete(7);
+        Assert.Equal("Работа", Assert.Single(store.ReadTags(8)));
+        store.Clear();
+        using var check = new SqliteConnection($"Data Source={Database};Pooling=False");
+        check.Open();
+        using var query = check.CreateCommand();
+        query.CommandText = "SELECT (SELECT count(*) FROM tags) + (SELECT count(*) FROM entry_tags)";
+        Assert.Equal(0L, query.ExecuteScalar());
+    }
+
     public void Dispose() => Directory.Delete(_directory, recursive: true);
 }

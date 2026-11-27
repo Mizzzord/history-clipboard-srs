@@ -31,9 +31,10 @@ public sealed partial class MainWindow : Window
 
     public MainWindow() : this(initialize: true) { }
 
-    internal MainWindow(bool initialize)
+    internal MainWindow(bool initialize, HistoryStore? store = null)
     {
         AvaloniaXamlLoader.Load(this);
+        _store = store;
         DataContext = _model;
         _model.QueryChanged += SearchChanged;
         _model.SelectionChanged += async () => await LoadSelection();
@@ -153,10 +154,11 @@ public sealed partial class MainWindow : Window
         }
         try
         {
-            var text = await DatabaseWork(() => store.ReadText(selected.Id));
+            var data = await DatabaseWork(() => (Text: store.ReadText(selected.Id), Tags: store.ReadTags(selected.Id)));
             if (_closing || revision != _selectionRevision)
                 return;
-            _model.SelectedText = text ?? "";
+            _model.SelectedText = data.Text ?? "";
+            _model.Tags = string.Join(", ", data.Tags);
             _model.Loading = false;
         }
         catch (StorageException ex)
@@ -271,6 +273,22 @@ public sealed partial class MainWindow : Window
 
     private void PreviousPage(object? sender, RoutedEventArgs e) => _model.MovePage(-1);
     private void NextPage(object? sender, RoutedEventArgs e) => _model.MovePage(1);
+
+    private async void SaveTags(object? sender, RoutedEventArgs e)
+    {
+        var store = _store;
+        if (!_model.CanAct || _model.Selected is not { } selected || store is null)
+            return;
+        var tags = _model.Tags;
+        try
+        {
+            await DatabaseWork(() => { store.SetTags(selected.Id, tags); return true; }, writable: true);
+            if (_model.Selected?.Id == selected.Id)
+                _model.Notice = "Метки сохранены.";
+        }
+        catch (ArgumentException ex) { _model.Notice = ex.Message; }
+        catch (StorageException ex) { StorageFailed(ex); }
+    }
 
     private async void DeleteEntry(object? sender, RoutedEventArgs e)
     {
