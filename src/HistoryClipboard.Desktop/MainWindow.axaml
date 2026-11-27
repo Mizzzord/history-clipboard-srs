@@ -69,8 +69,8 @@
             </StackPanel>
           </StackPanel>
           <Grid Grid.Row="3" ColumnDefinitions="*,Auto" ColumnSpacing="8" IsEnabled="{Binding CanAct}">
-            <TextBox Text="{Binding Tags, Mode=TwoWay}" Watermark="Метки через запятую" AutomationProperties.Name="Метки записи через запятую" />
-            <Button Grid.Column="1" Content="Сохранить метки" Click="SaveTags" />
+            <TextBox x:Name="TagInput" Text="{Binding Tags, Mode=TwoWay}" Watermark="Метки через запятую" AutomationProperties.Name="Метки записи через запятую" />
+            <Button x:Name="SaveTagsButton" Grid.Column="1" Content="Сохранить метки" Click="SaveTags" />
           </Grid>
           <Grid Grid.Row="4" ColumnDefinitions="*,Auto" ColumnSpacing="12">
             <Button Content="Скопировать" Classes="primary" Click="CopyEntry" IsEnabled="{Binding CanAct}" HorizontalContentAlignment="Center" />

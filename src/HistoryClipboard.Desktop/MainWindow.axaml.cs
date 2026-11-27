@@ -31,9 +31,10 @@ public sealed partial class MainWindow : Window
 
     public MainWindow() : this(initialize: true) { }
 
-    internal MainWindow(bool initialize)
+    internal MainWindow(bool initialize, HistoryStore? store = null)
     {
         AvaloniaXamlLoader.Load(this);
+        _store = store;
         DataContext = _model;
         _model.QueryChanged += SearchChanged;
         _model.SelectionChanged += async () => await LoadSelection();

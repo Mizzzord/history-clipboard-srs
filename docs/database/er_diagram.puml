@@ -1,0 +1,26 @@
+@startuml
+!pragma layout smetana
+hide circle
+skinparam shadowing false
+skinparam linetype ortho
+skinparam classBackgroundColor #F4F8F7
+skinparam classBorderColor #366561
+title Записи истории и пользовательские метки
+entity "entries" as Entries {
+  * id : INTEGER <<PK>>
+  --
+  * text : TEXT
+  * created_at : TEXT
+}
+entity "entry_tags" as Links {
+  * entry_id : INTEGER <<PK, FK>>
+  * tag_id : INTEGER <<PK, FK>>
+}
+entity "tags" as Tags {
+  * id : INTEGER <<PK>>
+  --
+  * name : TEXT <<UNIQUE>>
+}
+Entries ||--o{ Links
+Tags ||--o{ Links
+@enduml

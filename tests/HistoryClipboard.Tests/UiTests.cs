@@ -44,6 +44,48 @@ public sealed class UiTests
         Assert.True(model.ShowPages);
     }
 
+    [AvaloniaTheory]
+    [InlineData(760, 520)]
+    [InlineData(1060, 720)]
+    public async Task EditTagsForSelectedEntry(int width, int height)
+    {
+        var temporary = Directory.CreateTempSubdirectory();
+        try
+        {
+            var store = new HistoryStore(Path.Combine(temporary.FullName, "history.db"));
+            store.Add("Тест", DateTimeOffset.Now);
+            var window = new MainWindow(initialize: false, store: store) { Width = width, Height = height };
+            window.Show();
+            try
+            {
+                var model = (MainViewModel)window.DataContext!;
+                var save = window.FindControl<Button>("SaveTagsButton")!;
+                Assert.False(save.IsEffectivelyEnabled);
+                var entry = Assert.Single(store.List());
+                model.Entries.Add(entry);
+                model.Ready = true;
+                model.Selected = entry;
+                await WaitUntil(() => !model.Loading);
+                var input = window.FindControl<TextBox>("TagInput")!;
+                Assert.True(input.Bounds.Width > 0 && save.Bounds.Width > 0);
+                input.Focus();
+                window.KeyTextInput("Работа, Архив");
+                save.RaiseEvent(new Avalonia.Interactivity.RoutedEventArgs(Button.ClickEvent));
+                await WaitUntil(() => model.Notice == "Метки сохранены.");
+                Assert.Equal(new[] { "Архив", "Работа" }, store.ReadTags(entry.Id));
+            }
+            finally { window.Close(); }
+        }
+        finally { temporary.Delete(true); }
+    }
+
+    private static async Task WaitUntil(Func<bool> condition)
+    {
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        while (!condition())
+            await Task.Delay(10, timeout.Token);
+    }
+
     [AvaloniaFact]
     public void CopyShortcutDoesNotToggleSelectedListItem()
     {
